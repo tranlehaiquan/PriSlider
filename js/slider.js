@@ -1,21 +1,43 @@
 class slider {
   constructor() {
+    // All Element
+    this.sliderParentItem = document.querySelector(".slider__items");
     this.sliderItem = document.querySelectorAll(".slider__item");
     this.dotsWrapper = document.querySelector(".slider__dots");
     this.dots;
-    this.currentSlider = 0;
-    this.navButtonWrapper = document.querySelector(".slider__nav");
     this.btnNav;
 
+    // All property of slider
+    this.currentSlider = 0;
+    this.startPoint = 0;
+    this.currentPoint = 0;
+
+    // All event
+    this.renderSliderWrapper = this.renderSliderWrapper.bind(this);
     this.renderDots = this.renderDots.bind(this);
     this.updateDots = this.updateDots.bind(this);
     this.renderNav = this.renderNav.bind(this);
     this.updateNav = this.updateNav.bind(this);
     this.changeSlider = this.changeSlider.bind(this);
+    this.onPress = this.onPress.bind(this);
+    this.onMove = this.onMove.bind(this);
+    this.onLeave = this.onLeave.bind(this);
 
     this.init = this.init.bind(this);
 
     this.init();
+  }
+
+  renderSliderWrapper() {
+    //Calc width for sliderParentItem and add it
+    const widthItem = this.sliderParentItem.offsetWidth;
+    const totalParentWidth = widthItem * this.sliderItem.length;
+    this.sliderParentItem.style.width = `${totalParentWidth}px`;
+    this.sliderParentItem.style.transform = `translateX(${this.currentSlider * widthItem}px)`;
+    //Add width for every slider__Item
+    Array.prototype.forEach.call( this.sliderItem, (item, index) => {
+      item.style.width = `${widthItem}px`;
+    });
   }
 
   renderDots() {
@@ -44,16 +66,19 @@ class slider {
   }
 
   renderNav() {
+    let navButtonWrapper = document.querySelector(".slider__nav");
     const classOfPreButton = 'slider__button slider__button--previous js-btnNav';
     const classOfNextButton = 'slider__button slider__button--next js-btnNav';
 
     const prevButton = this.currentSlider === 0 
       ? `<div class="${classOfPreButton} slider__button--disable" ></div>`
       : `<div class="${classOfPreButton}" data-slide=${this.currentSlider - 1} ></div>` ;
+
     const nextButton = this.currentSlider === (this.sliderItem.length - 1)
       ? `<div class="${classOfNextButton} slider__button--disable"></div>`
       : `<div class="${classOfNextButton}" data-slide=${this.currentSlider + 1}></div>`;
-    this.navButtonWrapper.innerHTML = prevButton.concat(nextButton);
+
+    navButtonWrapper.innerHTML = prevButton.concat(nextButton);
 
     this.btnNav = document.querySelectorAll(".js-btnNav");
   }
@@ -104,6 +129,29 @@ class slider {
 
   }
 
+  onPress(event) {
+    this.startPoint = event.offsetX;
+    this.currentPoint = event.offsetX;
+  }
+  
+  onMove(event) {
+    if( this.startPoint > 0 ) {
+      if( this.currentSlider = 0 ) {
+        this.currentPoint = Math.max(0, event.offsetX - this.startPoint);
+      } else if ( this.currentSlider === (this.sliderItem.length - 1) ) {
+        this.currentPoint = Math.min(0, event.offsetX - this.startPoint);
+      } else {
+        this.currentPoint = event.offsetX - this.startPoint;
+      }
+      console.log(this.currentPoint);
+      this.sliderParentItem.style.transform = `translateX(${this.currentPoint}px)`;
+    }
+  }
+
+  onLeave(event) {
+    this.startPoint = -1;
+  }
+
   addEventListeners() {
     // Add event for dots
     Array.prototype.forEach.call(this.dots, (item) => {
@@ -113,9 +161,15 @@ class slider {
     Array.prototype.forEach.call(this.btnNav, (item) => {
       item.addEventListener('click', this.changeSlider);
     });
+    // Add event when user mouse down/move/up
+    this.sliderParentItem.addEventListener("mousedown", this.onPress);
+    this.sliderParentItem.addEventListener("mousemove", this.onMove);
+    this.sliderParentItem.addEventListener("mouseup", this.onLeave);
   } 
   
   init() {
+    // Render slide
+    this.renderSliderWrapper();
     // Render dots
     this.renderDots();
     // Render nav button
