@@ -12,7 +12,7 @@ body {
 .slider__items {
   position: relative;
   display: flex;
-  flex-direction: 'row'
+  flex-direction: row;
 }
 .slider__item {
   position: relative;

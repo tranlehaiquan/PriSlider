@@ -1,7 +1,8 @@
 class slider {
   constructor() {
     // All Element
-    this.sliderParentItem = document.querySelector(".slider__items");
+    this.sliderParent = document.querySelector(".slider");    
+    this.sliderItems = document.querySelector(".slider__items");
     this.sliderItem = document.querySelectorAll(".slider__item");
     this.dotsWrapper = document.querySelector(".slider__dots");
     this.dots;
@@ -22,6 +23,7 @@ class slider {
     this.onPress = this.onPress.bind(this);
     this.onMove = this.onMove.bind(this);
     this.onLeave = this.onLeave.bind(this);
+    this.onTranformEnd = this.onTranformEnd.bind(this);
 
     this.init = this.init.bind(this);
 
@@ -29,11 +31,11 @@ class slider {
   }
 
   renderSliderWrapper() {
-    //Calc width for sliderParentItem and add it
-    const widthItem = this.sliderParentItem.offsetWidth;
+    //Calc width for sliderItems and add it
+    const widthItem = this.sliderItems.offsetWidth;
     const totalParentWidth = widthItem * this.sliderItem.length;
-    this.sliderParentItem.style.width = `${totalParentWidth}px`;
-    this.sliderParentItem.style.transform = `translateX(${this.currentSlider * widthItem}px)`;
+    this.sliderItems.style.width = `${totalParentWidth}px`;
+    this.sliderItems.style.transform = `translateX(${this.currentSlider * widthItem}px)`;
     //Add width for every slider__Item
     Array.prototype.forEach.call( this.sliderItem, (item, index) => {
       item.style.width = `${widthItem}px`;
@@ -130,26 +132,42 @@ class slider {
   }
 
   onPress(event) {
-    this.startPoint = event.offsetX;
-    this.currentPoint = event.offsetX;
+    this.startPoint = event.clientX;
+    this.currentPoint = event.clientX;
   }
   
   onMove(event) {
     if( this.startPoint > 0 ) {
-      if( this.currentSlider = 0 ) {
-        this.currentPoint = Math.max(0, event.offsetX - this.startPoint);
+      // At first slider item, midde, the end
+      if( this.currentSlider === 0 ) {
+        this.currentPoint = Math.min(0, event.clientX - this.startPoint);
       } else if ( this.currentSlider === (this.sliderItem.length - 1) ) {
-        this.currentPoint = Math.min(0, event.offsetX - this.startPoint);
+        this.currentPoint = Math.max(0, event.clientX - this.startPoint);
       } else {
-        this.currentPoint = event.offsetX - this.startPoint;
+        this.currentPoint = event.clientX - this.startPoint;
       }
-      console.log(this.currentPoint);
-      this.sliderParentItem.style.transform = `translateX(${this.currentPoint}px)`;
+
+      this.sliderItems.style.transform = `translateX(${this.currentPoint}px)`;
     }
   }
 
   onLeave(event) {
+    // Reset start point and current point
     this.startPoint = -1;
+    if( Math.abs(this.currentPoint) > (this.sliderParent.offsetWidth / 3) ) {
+      
+    } else if( this.currentPoint !== 0 ) {
+      this.currentPoint = 0;
+      this.sliderItems.style.transform = `translateX(${this.currentPoint}px)`;
+      this.sliderItems.style.transition = `.3s transform`;
+      // remove transtion when transfrom end
+      this.sliderItems.addEventListener("transitionend", this.onTranformEnd);
+    }
+  }
+
+  onTranformEnd() {
+    this.sliderItems.style.transition = `0s transform`;
+    this.sliderItems.removeEventListener("transitionend", this.onTranformEnd);
   }
 
   addEventListeners() {
@@ -162,9 +180,9 @@ class slider {
       item.addEventListener('click', this.changeSlider);
     });
     // Add event when user mouse down/move/up
-    this.sliderParentItem.addEventListener("mousedown", this.onPress);
-    this.sliderParentItem.addEventListener("mousemove", this.onMove);
-    this.sliderParentItem.addEventListener("mouseup", this.onLeave);
+    this.sliderParent.addEventListener("mousedown", this.onPress);
+    this.sliderParent.addEventListener("mousemove", this.onMove);
+    this.sliderParent.addEventListener("mouseup", this.onLeave);
   } 
   
   init() {
