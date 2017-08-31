@@ -14,10 +14,16 @@ body {
   display: flex;
   flex-direction: row;
 }
+
+.slider__items--animation {
+  transition: .3s all;
+}
+
 .slider__item {
   position: relative;
   pointer-events: none;
 }
+
 .slider__item--active {
   top: 0;
 }

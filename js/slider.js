@@ -1,3 +1,5 @@
+// ToDOLIST
+// onLeave bug, if can't drag to left or right
 class slider {
   constructor() {
     // All Element
@@ -10,8 +12,10 @@ class slider {
 
     // All property of slider
     this.currentSlider = 0;
-    this.startPoint = 0;
+    this.sliderWidth;
+    this.startPoint = -1;
     this.currentPoint = 0;
+    this.currentTranslate;
 
     // All event
     this.renderSliderWrapper = this.renderSliderWrapper.bind(this);
@@ -32,13 +36,13 @@ class slider {
 
   renderSliderWrapper() {
     //Calc width for sliderItems and add it
-    const widthItem = this.sliderItems.offsetWidth;
-    const totalParentWidth = widthItem * this.sliderItem.length;
+    this.sliderWidth = this.sliderItems.offsetWidth;
+    const totalParentWidth = this.sliderWidth * this.sliderItem.length;
     this.sliderItems.style.width = `${totalParentWidth}px`;
-    this.sliderItems.style.transform = `translateX(${this.currentSlider * widthItem}px)`;
+    this.sliderItems.style.transform = `translateX(${this.currentSlider * this.sliderWidth}px)`;
     //Add width for every slider__Item
     Array.prototype.forEach.call( this.sliderItem, (item, index) => {
-      item.style.width = `${widthItem}px`;
+      item.style.width = `${this.sliderWidth}px`;
     });
   }
 
@@ -106,30 +110,24 @@ class slider {
     }
   }
 
+  
   changeSlider(eventEl) {
-    function onFadeInEnd() {
-      domToSlider.classList.remove("slider__item--fadeIn");
-      domCurrentSlider.classList.remove("slider__item--fadeOut")
-    }
-    // get current slider
-    let domCurrentSlider = this.sliderItem[this.currentSlider];
-    // get to slider
+    // Get toslider's number, and toTransition pixel
     let toSlider = Number.parseInt(eventEl.target.getAttribute("data-slide"));
-    let domToSlider = this.sliderItem[toSlider];
-    // add and remove style active of slider item
-    domToSlider.classList.add("slider__item--fadeIn", "slider__item--active");
-    domToSlider.addEventListener("animationend", onFadeInEnd);
+    let toTransition = -(this.sliderWidth * toSlider);
 
-    domCurrentSlider.classList.add("slider__item--fadeOut");
-    domCurrentSlider.classList.remove("slider__item--active");
-    
+    this.sliderItems.style.transform = `translate(${toTransition}px)`;
+    this.sliderItems.style.transition = `.3s transform`;
+    this.sliderItems.addEventListener("transitionend", this.onTranformEnd);
+
     this.currentSlider = toSlider;
     // update dots style
     this.updateDots();
     // update nav
     this.updateNav();
-
   }
+
+
 
   onPress(event) {
     this.startPoint = event.clientX;
@@ -147,21 +145,29 @@ class slider {
         this.currentPoint = event.clientX - this.startPoint;
       }
 
-      this.sliderItems.style.transform = `translateX(${this.currentPoint}px)`;
+      // Add new translate
+      this.currentTranslate = -(this.sliderWidth * this.currentSlider)
+      this.sliderItems.style.transform = `translateX(${this.currentPoint + this.currentTranslate}px)`;
     }
   }
 
   onLeave(event) {
-    // Reset start point and current point
-    this.startPoint = -1;
-    if( Math.abs(this.currentPoint) > (this.sliderParent.offsetWidth / 3) ) {
+    if ( this.startPoint !== -1 ) {
+      // Reset start
+      this.startPoint = -1;
       
-    } else if( this.currentPoint !== 0 ) {
-      this.currentPoint = 0;
-      this.sliderItems.style.transform = `translateX(${this.currentPoint}px)`;
-      this.sliderItems.style.transition = `.3s transform`;
-      // remove transtion when transfrom end
-      this.sliderItems.addEventListener("transitionend", this.onTranformEnd);
+      // Did user drag enough far? 
+      if( Math.abs(this.currentPoint) > (this.sliderParent.offsetWidth / 3) ) {
+        (this.startPoint - this.currentPoint) > 0
+          ? this.changeSlider(this.currentSlider + 1)
+          : this.changeSlider(this.currentSlider - 1);
+      } else if( this.currentPoint !== 0 ) {
+        this.currentPoint = 0;
+        this.sliderItems.style.transform = `translateX(${this.currentTranslate}px)`;
+        this.sliderItems.style.transition = `.3s transform`;
+        // remove transtion when transfrom end
+        this.sliderItems.addEventListener("transitionend", this.onTranformEnd);
+      }  
     }
   }
 
