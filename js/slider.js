@@ -1,5 +1,5 @@
 // ToDOLIST
-// onLeave bug, if can't drag to left or right
+// Fix bug for nav button
 class slider {
   constructor() {
     // All Element
@@ -14,7 +14,7 @@ class slider {
     this.currentSlider = 0;
     this.sliderWidth;
     this.startPoint = -1;
-    this.currentPoint = 0;
+    this.distancePoint = 0;
     this.currentTranslate;
 
     // All event
@@ -127,47 +127,59 @@ class slider {
     this.updateNav();
   }
 
+  changeSliderTo(toSlider) {
+    let toTransition = -(this.sliderWidth * toSlider);
 
+    this.sliderItems.style.transform = `translate(${toTransition}px)`;
+    this.sliderItems.style.transition = `.3s transform`;
+    this.sliderItems.addEventListener("transitionend", this.onTranformEnd);
+
+    this.currentSlider = toSlider;
+    // update dots style
+    this.updateDots();
+    // update nav
+    this.updateNav();
+  } 
 
   onPress(event) {
     this.startPoint = event.clientX;
-    this.currentPoint = event.clientX;
+    this.distancePoint = event.clientX;
   }
   
   onMove(event) {
     if( this.startPoint > 0 ) {
       // At first slider item, midde, the end
       if( this.currentSlider === 0 ) {
-        this.currentPoint = Math.min(0, event.clientX - this.startPoint);
+        this.distancePoint = Math.min(0, event.clientX - this.startPoint);
       } else if ( this.currentSlider === (this.sliderItem.length - 1) ) {
-        this.currentPoint = Math.max(0, event.clientX - this.startPoint);
+        this.distancePoint = Math.max(0, event.clientX - this.startPoint);
       } else {
-        this.currentPoint = event.clientX - this.startPoint;
+        this.distancePoint = event.clientX - this.startPoint;
       }
 
       // Add new translate
       this.currentTranslate = -(this.sliderWidth * this.currentSlider)
-      this.sliderItems.style.transform = `translateX(${this.currentPoint + this.currentTranslate}px)`;
+      this.sliderItems.style.transform = `translateX(${this.distancePoint + this.currentTranslate}px)`;
     }
   }
 
   onLeave(event) {
     if ( this.startPoint !== -1 ) {
-      // Reset start
-      this.startPoint = -1;
-      
       // Did user drag enough far? 
-      if( Math.abs(this.currentPoint) > (this.sliderParent.offsetWidth / 3) ) {
-        (this.startPoint - this.currentPoint) > 0
-          ? this.changeSlider(this.currentSlider + 1)
-          : this.changeSlider(this.currentSlider - 1);
-      } else if( this.currentPoint !== 0 ) {
-        this.currentPoint = 0;
+      if( Math.abs(this.distancePoint) > (this.sliderParent.offsetWidth / 6) ) {
+        if ( this.distancePoint > 0 )
+          this.changeSliderTo(this.currentSlider - 1);
+        if ( this.distancePoint < 0 )
+          this.changeSliderTo(this.currentSlider + 1);
+      } else if( this.distancePoint !== 0 ) {
+        this.distancePoint = 0;
         this.sliderItems.style.transform = `translateX(${this.currentTranslate}px)`;
         this.sliderItems.style.transition = `.3s transform`;
         // remove transtion when transfrom end
         this.sliderItems.addEventListener("transitionend", this.onTranformEnd);
-      }  
+      }
+      // Reset start
+      this.startPoint = -1;
     }
   }
 
