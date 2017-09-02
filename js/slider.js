@@ -1,5 +1,5 @@
 // ToDOLIST
-// Fix bug for nav button
+// debug nav button
 class slider {
   constructor() {
     // All Element
