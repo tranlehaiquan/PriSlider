@@ -84,6 +84,11 @@ body {
 
 .slider__button {
   cursor: pointer;
+  /* Do not let user select (drag) */
+  user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
 }
 
 .slider__button:before {
