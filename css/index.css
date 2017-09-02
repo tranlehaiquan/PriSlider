@@ -25,6 +25,9 @@ body {
   /* Block user from trigger event and select img */
   pointer-events: none; 
   user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
 }
 
 .slider__item--active {
@@ -70,6 +73,7 @@ body {
 .slider__dot--active {
   background: white;
 }
+
 .slider__nav {
   position: absolute;
   top: 50%;
@@ -77,6 +81,11 @@ body {
   width: 100%;
   z-index: 3;
 }
+
+.slider__button {
+  cursor: pointer;
+}
+
 .slider__button:before {
   position: absolute;
   top: 50%;
