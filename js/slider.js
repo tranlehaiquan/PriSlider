@@ -1,5 +1,4 @@
 // ToDOLIST
-// debug nav button
 class slider {
   constructor() {
     // All Element
@@ -16,7 +15,8 @@ class slider {
     this.startPoint = -1;
     this.distancePoint = 0;
     this.currentTranslate;
-
+    this.autoPlayId;
+    this.autoPlayTime = 2000;
     // All event
     this.renderSliderWrapper = this.renderSliderWrapper.bind(this);
     this.renderDots = this.renderDots.bind(this);
@@ -28,6 +28,7 @@ class slider {
     this.onMove = this.onMove.bind(this);
     this.onLeave = this.onLeave.bind(this);
     this.onTranformEnd = this.onTranformEnd.bind(this);
+    this.autoPlay = this.autoPlay.bind(this);
 
     this.init = this.init.bind(this);
 
@@ -143,7 +144,9 @@ class slider {
 
   onPress(event) {
     this.startPoint = event.clientX;
-    this.distancePoint = event.clientX;
+    this.distancePoint = 0;
+
+    clearInterval(this.autoPlayId);
   }
   
   onMove(event) {
@@ -166,7 +169,7 @@ class slider {
   onLeave(event) {
     if ( this.startPoint !== -1 ) {
       // Did user drag enough far? 
-      if( Math.abs(this.distancePoint) > (this.sliderParent.offsetWidth / 6) ) {
+      if( Math.abs(this.distancePoint) > (this.sliderParent.offsetWidth / 10) ) {
         if ( this.distancePoint > 0 )
           this.changeSliderTo(this.currentSlider - 1);
         if ( this.distancePoint < 0 )
@@ -180,12 +183,29 @@ class slider {
       }
       // Reset start
       this.startPoint = -1;
+      // Start auto play again
+      this.autoPlay(this.autoPlayTime);
     }
   }
 
   onTranformEnd() {
     this.sliderItems.style.transition = `0s transform`;
     this.sliderItems.removeEventListener("transitionend", this.onTranformEnd);
+  }
+
+  autoPlay( milliseconds ) {
+    let stepNumber = 1;
+
+    this.autoPlayId = setInterval( () => {
+      if( this.currentSlider === this.sliderItem.length - 1 ) {
+        stepNumber = -1;
+      } 
+
+      if( this.currentSlider === 0 ) {
+        stepNumber = 1;
+      }
+      this.changeSliderTo( this.currentSlider + stepNumber );  
+    }, milliseconds )
   }
 
   addEventListeners() {
@@ -201,6 +221,7 @@ class slider {
     this.sliderParent.addEventListener("mousedown", this.onPress);
     this.sliderParent.addEventListener("mousemove", this.onMove);
     this.sliderParent.addEventListener("mouseup", this.onLeave);
+    this.sliderParent.addEventListener("mouseleave", this.onLeave);
   } 
   
   init() {
@@ -209,7 +230,9 @@ class slider {
     // Render dots
     this.renderDots();
     // Render nav button
-    this.renderNav()
+    this.renderNav();
+    // Auto play
+    this.autoPlay(this.autoPlayTime);
     // Add event
     this.addEventListeners();
   }

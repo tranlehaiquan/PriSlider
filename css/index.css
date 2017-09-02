@@ -13,6 +13,7 @@ body {
   position: relative;
   display: flex;
   flex-direction: row;
+  cursor: pointer;
 }
 
 .slider__items--animation {
@@ -21,7 +22,9 @@ body {
 
 .slider__item {
   position: relative;
-  pointer-events: none;
+  /* Block user from trigger event and select img */
+  pointer-events: none; 
+  user-select: none;
 }
 
 .slider__item--active {
@@ -47,6 +50,7 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 3;
+  position: absolute;
 }
 
 .slider__dot {
@@ -55,10 +59,10 @@ body {
   border: 1px solid white;
   display: inline-block;
   margin: 0 5px;
-  background: transparent;
+  background-color: transparent;
   border-radius: 50%;
   cursor: pointer;
-  transition: .3s background;
+  transition: .3s background-color;
 }
 .slider__dot:hover {
   background: white;
